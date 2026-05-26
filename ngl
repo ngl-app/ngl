@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NGL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+
+    /* ── PAGES ── */
+    .page{display:none;min-height:100vh}
+    .page.active{display:flex;flex-direction:column}
+    @keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ══════════════════════════════
+       SEND PAGE — NGL KLON
+    ══════════════════════════════ */
+    #page-send{
+      background: linear-gradient(160deg, #f953c6 0%, #ff6b35 60%, #ffb347 100%);
+      align-items:center;
+      padding:40px 20px 32px;
+      min-height:100vh;
+    }
+
+    .ngl-card{
+      background:#fff;
+      border-radius:20px;
+      padding:16px 16px 0;
+      width:100%;
+      max-width:380px;
+      box-shadow:0 8px 32px rgba(0,0,0,0.15);
+      margin-bottom:18px;
+    }
+
+    .ngl-card-header{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .ngl-avatar{
+      width:42px;height:42px;
+      border-radius:50%;
+      background:#e0e0e0;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
+    }
+
+    .ngl-avatar svg{width:24px;height:24px;fill:#bbb}
+
+    .ngl-card-header-text{}
+    .ngl-handle{font-size:14px;font-weight:700;color:#111}
+    .ngl-sub{font-size:13px;color:#555;font-weight:400}
+
+    .ngl-textarea-wrap{
+      background:linear-gradient(160deg,#fce4ec,#fff3e0);
+      border-radius:14px;
+      padding:14px 14px 40px;
+      margin-bottom:0;
+      position:relative;
+      min-height:130px;
+    }
+
+    .ngl-textarea{
+      width:100%;
+      background:transparent;
+      border:none;
+      outline:none;
+      font-family:inherit;
+      font-size:18px;
+      font-weight:500;
+      color:#333;
+      resize:none;
+      min-height:80px;
+    }
+
+    .ngl-textarea::placeholder{color:#ccc;font-weight:500}
+
+    .ngl-dice{
+      position:absolute;
+      bottom:10px;right:10px;
+      width:36px;height:36px;
+      background:#fff;
+      border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:18px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.12);
+      cursor:pointer;
+      border:none;
+    }
+
+    .ngl-anon-label{
+      text-align:center;
+      font-size:13px;
+      color:rgba(255,255,255,0.9);
+      margin-bottom:14px;
+    }
+
+    .ngl-send-btn{
+      width:100%;
+      max-width:380px;
+      padding:17px;
+      background:#111;
+      color:#fff;
+      border:none;
+      border-radius:50px;
+      font-family:inherit;
+      font-size:17px;
+      font-weight:700;
+      cursor:pointer;
+      margin-bottom:28px;
+      transition:opacity .15s;
+    }
+
+    .ngl-send-btn:hover{opacity:.85}
+    .ngl-send-btn:disabled{opacity:.4;cursor:not-allowed}
+
+    .ngl-promo{
+      text-align:center;
+      color:rgba(255,255,255,0.9);
+      font-size:14px;
+      font-weight:500;
+      margin-bottom:14px;
+    }
+
+    .ngl-get-btn{
+      width:100%;
+      max-width:380px;
+      padding:17px;
+      background:#111;
+      color:#fff;
+      border:none;
+      border-radius:50px;
+      font-family:inherit;
+      font-size:17px;
+      font-weight:700;
+      cursor:pointer;
+      margin-bottom:24px;
+      transition:opacity .15s;
+    }
+
+    .ngl-get-btn:hover{opacity:.85}
+
+    .ngl-footer{
+      display:flex;gap:20px;
+      color:rgba(255,255,255,0.7);
+      font-size:13px;
+    }
+
+    .ngl-footer a{color:inherit;text-decoration:none}
+    .ngl-footer a:hover{text-decoration:underline}
+
+    .ngl-success{
+      text-align:center;
+      color:#fff;
+      padding:20px;
+      max-width:380px;
+      width:100%;
+    }
+
+    .ngl-success .check{font-size:48px;margin-bottom:12px}
+    .ngl-success h2{font-size:20px;font-weight:700;margin-bottom:8px}
+    .ngl-success p{font-size:14px;opacity:.85;margin-bottom:20px}
+    .ngl-success button{
+      background:#fff;color:#111;border:none;
+      border-radius:50px;padding:14px 32px;
+      font-family:inherit;font-size:15px;font-weight:700;
+      cursor:pointer;transition:opacity .15s;
+    }
+    .ngl-success button:hover{opacity:.85}
+
+    /* ══════════════════════════════
+       LOGIN PAGE
+    ══════════════════════════════ */
+    #page-login{
+      background:#0f0f0f;
+      align-items:center;
+      justify-content:center;
+      padding:40px 20px;
+    }
+
+    .login-wrap{width:100%;max-width:360px}
+
+    .login-logo{text-align:center;margin-bottom:32px}
+    .login-logo svg{display:block;margin:0 auto 14px}
+    .login-logo h1{font-size:11px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#444}
+
+    .lfield{margin-bottom:10px}
+    .lfield label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444;margin-bottom:5px}
+    .lfield input{width:100%;background:#181818;border:1px solid #262626;border-radius:8px;padding:10px 13px;color:#e8e8e8;font-family:inherit;font-size:14px;outline:none;transition:border-color .15s}
+    .lfield input:focus{border-color:#444}
+    .lfield input::placeholder{color:#333}
+
+    .lbtn{width:100%;padding:11px;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .15s;margin-top:4px}
+    .lbtn:hover{opacity:.75}.lbtn:disabled{opacity:.3;cursor:not-allowed}
+    .lbtn-main{background:#e8e8e8;color:#0f0f0f}
+
+    .lerr{padding:9px 13px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none;background:rgba(255,85,85,.07);border:1px solid rgba(255,85,85,.2);color:#ff8888}
+    .lerr.show{display:block}
+
+    /* ══════════════════════════════
+       DASHBOARD PAGE
+    ══════════════════════════════ */
+    #page-dash{
+      background:#0f0f0f;
+      color:#e8e8e8;
+      align-items:center;
+      padding:0 16px 48px;
+    }
+
+    .dash-inner{width:100%;max-width:400px}
+
+    .dash-top{display:flex;align-items:center;justify-content:space-between;padding:24px 0 18px;border-bottom:1px solid #1e1e1e;margin-bottom:18px}
+    .dash-top h2{font-size:14px;font-weight:500}
+    .dash-top p{font-size:11px;color:#444;margin-top:2px}
+
+    .dbtn{border:none;border-radius:8px;font-family:inherit;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:opacity .15s;padding:7px 14px;background:transparent;color:#444;border:1px solid #262626}
+    .dbtn:hover{opacity:.7}
+
+    .link-row{display:flex;align-items:center;gap:8px;background:#181818;border:1px solid #1e1e1e;border-radius:8px;padding:9px 13px;margin-bottom:20px}
+    .link-text{flex:1;font-size:11px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace}
+    .copy-btn{flex-shrink:0;background:#2a2a2a;color:#e8e8e8;border:none;border-radius:6px;padding:5px 12px;font-family:inherit;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .15s}
+    .copy-btn:hover{background:#383838}
+
+    .slabel{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+    .badge{background:#2a2a2a;color:#e8e8e8;border-radius:20px;padding:2px 7px;font-size:10px}
+
+    .mcard{background:#181818;border:1px solid #1e1e1e;border-radius:8px;padding:13px 15px;margin-bottom:7px;cursor:pointer;transition:border-color .15s}
+    .mcard:hover{border-color:#2e2e2e}
+    .mcard.unread{border-color:#2a2a2a}
+    .mtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+    .msender{font-size:13px;font-weight:400;color:#444}
+    .mcard.unread .msender{color:#e8e8e8}
+    .mtime{font-size:11px;color:#2a2a2a}
+    .mbody{font-size:13px;color:#444;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .udot{width:5px;height:5px;background:#e8e8e8;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+
+    .empty{text-align:center;padding:40px 0;color:#2a2a2a;font-size:13px;line-height:1.8}
+    .loading{text-align:center;padding:28px 0;color:#2a2a2a;font-size:12px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spin{display:inline-block;width:14px;height:14px;border:1.5px solid #2a2a2a;border-top-color:#444;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+
+    /* ══════════════════════════════
+       MODAL
+    ══════════════════════════════ */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:flex-end;justify-content:center;padding:0}
+    .overlay.show{display:flex;animation:up .2s ease}
+    .modal{background:#181818;border:1px solid #262626;border-radius:14px 14px 0 0;padding:20px 18px 32px;width:100%;max-width:480px}
+    .mhandle{width:32px;height:3px;background:#2a2a2a;border-radius:2px;margin:0 auto 18px}
+    .msend-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#444;margin-bottom:3px}
+    .msend-name{font-size:17px;font-weight:400;margin-bottom:14px;color:#e8e8e8}
+    .mtext{font-size:15px;line-height:1.65;color:#e8e8e8;margin-bottom:8px}
+    .mtime-str{font-size:11px;color:#333;margin-bottom:20px}
+    .mbtns{display:flex;gap:8px}
+    .mbtn{border:none;border-radius:8px;font-family:inherit;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:10px;transition:opacity .15s}
+    .mbtn:hover{opacity:.7}
+    .mbtn-ghost{background:transparent;color:#444;border:1px solid #262626;flex:1}
+    .mbtn-del{background:transparent;color:#ff5555;border:1px solid rgba(255,85,85,.2);width:auto;padding:10px 18px}
+
+    /* ══════════════════════════════
+       SETUP PAGE
+    ══════════════════════════════ */
+    #page-setup{
+      background:#0f0f0f;
+      color:#e8e8e8;
+      align-items:center;
+      justify-content:center;
+      padding:40px 20px;
+    }
+
+    .setup-wrap{width:100%;max-width:360px}
+    .setup-wrap h2{font-size:13px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#444;margin-bottom:6px}
+    .setup-wrap > p{font-size:13px;color:#333;margin-bottom:24px;line-height:1.6}
+    .setup-section{margin-bottom:18px}
+    .setup-sec-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#333;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #1e1e1e}
+
+    .result-box{background:#181818;border:1px solid #1e1e1e;border-radius:8px;padding:14px 16px;margin-top:16px;font-size:12px;line-height:2}
+    .rl{color:#444;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+    .rv{color:#e8e8e8;font-family:monospace;font-size:11px;word-break:break-all}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(60px);background:#181818;border:1px solid #262626;border-radius:8px;padding:9px 16px;font-size:13px;color:#e8e8e8;z-index:9999;transition:transform .25s ease;white-space:nowrap}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px}
+  </style>
+</head>
+<body>
+
+  <!-- ══ SEND PAGE (NGL KLON) ══ -->
+  <div class="page" id="page-send">
+    <div id="send-form-wrap" style="display:flex;flex-direction:column;align-items:center;width:100%;padding:40px 20px 32px;flex:1">
+
+      <div class="ngl-card">
+        <div class="ngl-card-header">
+          <div class="ngl-avatar">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <div class="ngl-card-header-text">
+            <div class="ngl-handle" id="send-handle">@kullanici</div>
+            <div class="ngl-sub">bana anonim olarak mesajlar gönder!</div>
+          </div>
+        </div>
+        <div class="ngl-textarea-wrap">
+          <textarea class="ngl-textarea" id="send-msg" placeholder="Bir mesaj yaz..." maxlength="500"></textarea>
+          <button class="ngl-dice" id="dice-btn" title="Rastgele soru" type="button">🎲</button>
+        </div>
+      </div>
+
+      <div style="width:100%;max-width:380px;margin-bottom:12px">
+        <input type="text" id="send-name" placeholder="Adın (zorunlu)" maxlength="40"
+          style="width:100%;background:rgba(255,255,255,0.2);border:none;border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15px;font-weight:500;color:#fff;outline:none;"
+        />
+      </div>
+
+      <div class="ngl-anon-label">🔒 anonim soru ve cevap</div>
+
+      <button class="ngl-send-btn" id="send-btn" onclick="doSend()">Gönder!</button>
+
+      <div class="ngl-promo">👆 205 arkadaşlar az önce bastı 👆</div>
+      <button class="ngl-get-btn" onclick="goGetMessages()">Kendi mesajlarını al!</button>
+
+      <div class="ngl-footer">
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
+      </div>
+    </div>
+
+    <div id="send-success-wrap" style="display:none;flex-direction:column;align-items:center;width:100%;padding:40px 20px;flex:1">
+      <div class="ngl-success">
+        <div class="check">✅</div>
+        <h2>Mesaj gönderildi!</h2>
+        <p>Mesajın iletildi.</p>
+        <button onclick="resetSend()">Başka mesaj gönder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LOGIN PAGE ══ -->
+  <div class="page" id="page-login">
+    <div class="login-logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <ellipse cx="16" cy="16" rx="15" ry="9" stroke="#333" stroke-width="1"/>
+        <circle cx="16" cy="16" r="5" stroke="#333" stroke-width="1"/>
+        <circle cx="16" cy="16" r="2" fill="#444"/>
+      </svg>
+      <h1>NGL</h1>
+    </div>
+    <div class="login-wrap">
+      <div class="lerr" id="login-err"></div>
+      <div class="lfield"><label>Kullanıcı adı</label><input type="text" id="login-user" placeholder="kullanıcı adın" autocomplete="username"/></div>
+      <div class="lfield"><label>Şifre</label><input type="password" id="login-pass" placeholder="şifren" autocomplete="current-password"/></div>
+      <button class="lbtn lbtn-main" id="login-btn" onclick="doLogin()">Giriş yap</button>
+    </div>
+  </div>
+
+  <!-- ══ DASHBOARD PAGE ══ -->
+  <div class="page" id="page-dash">
+    <div class="dash-inner">
+      <div class="dash-top">
+        <div><h2 id="dash-name">—</h2><p>gelen mesajlar</p></div>
+        <button class="dbtn" onclick="doLogout()">Çıkış</button>
+      </div>
+      <div class="link-row">
+        <span class="link-text" id="dash-link">—</span>
+        <button class="copy-btn" onclick="copyLink()">Kopyala</button>
+      </div>
+      <div class="slabel">Mesajlar<span class="badge" id="unread-badge" style="display:none"></span></div>
+      <div id="msg-list"><div class="loading"><span class="spin"></span>yükleniyor</div></div>
+    </div>
+  </div>
+
+  <!-- ══ SETUP PAGE ══ -->
+  <div class="page" id="page-setup">
+    <div class="setup-wrap">
+      <h2>İlk Kurulum</h2>
+      <p>Sadece bir kez yapılır.</p>
+
+      <div class="setup-section">
+        <div class="setup-sec-label">1. Kullanıcı (Sen)</div>
+        <div class="lfield"><label>Kullanıcı adı</label><input type="text" id="s1-user" placeholder="enes"/></div>
+        <div class="lfield"><label>Şifre</label><input type="password" id="s1-pass" placeholder="şifren"/></div>
+        <div class="lfield"><label>Görünen isim (@handle)</label><input type="text" id="s1-name" placeholder="enes"/></div>
+      </div>
+
+      <div class="setup-section">
+        <div class="setup-sec-label">2. Kullanıcı (Ablan)</div>
+        <div class="lfield"><label>Kullanıcı adı</label><input type="text" id="s2-user" placeholder="abla"/></div>
+        <div class="lfield"><label>Şifre</label><input type="password" id="s2-pass" placeholder="onun şifresi"/></div>
+        <div class="lfield"><label>Görünen isim (@handle)</label><input type="text" id="s2-name" placeholder="abla"/></div>
+      </div>
+
+      <div class="lerr" id="setup-err"></div>
+      <button class="lbtn lbtn-main" id="setup-btn" onclick="doSetup()">Kurulumu tamamla</button>
+
+      <div id="setup-result" style="display:none">
+        <div class="result-box" id="setup-result-box"></div>
+        <button class="lbtn lbtn-main" style="margin-top:14px" onclick="show('login')">Giriş yap</button>
+      </div>
+    </div>
+  </div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="msend-label">Gönderen</div>
+    <div class="msend-name" id="m-name">—</div>
+    <hr style="border:none;border-top:1px solid #1e1e1e;margin-bottom:14px"/>
+    <div class="mtext" id="m-text">—</div>
+    <div class="mtime-str" id="m-time">—</div>
+    <div class="mbtns">
+      <button class="mbtn mbtn-ghost" onclick="closeModal()">Kapat</button>
+      <button class="mbtn mbtn-del" onclick="deleteMsg()">Sil</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var API = "https://oracle.enesseker2113.workers.dev";
+  var user = null;
+  var msgs = [];
+  var openMsgId = null;
+  var currentSendToken = null;
+
+  var RANDOM_QUESTIONS = [
+    "Bekar mısın?","En büyük korkun ne?","Benden ne düşünüyorsun?",
+    "En güzel anın ne?","Sırrın var mı?","En çok neyi özlüyorsun?",
+    "Hayalindeki meslek ne?","En sevdiğin şarkı?","Beni tanımlayan 3 kelime?",
+    "Hayatında en çok kimi özlüyorsun?"
+  ];
+
+  function getToken(){return localStorage.getItem("ngl_tok")}
+  function setToken(t){localStorage.setItem("ngl_tok",t)}
+  function clearStorage(){localStorage.removeItem("ngl_tok");localStorage.removeItem("ngl_usr")}
+  function getSavedUser(){try{return JSON.parse(localStorage.getItem("ngl_usr"))}catch{return null}}
+  function saveUser(u){localStorage.setItem("ngl_usr",JSON.stringify(u))}
+
+  function show(id){
+    document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active")});
+    document.getElementById("page-"+id).classList.add("active");
+  }
+
+  function showErr(id,msg){var el=document.getElementById(id);el.className=(el.className.indexOf("lerr")>-1?"lerr":"alert")+" show";el.textContent=msg}
+  function hideErr(id){var el=document.getElementById(id);el.classList.remove("show")}
+
+  function toast(msg){
+    var el=document.getElementById("toast");
+    el.textContent=msg;el.classList.add("show");
+    setTimeout(function(){el.classList.remove("show")},2200);
+  }
+
+  function timeAgo(ts){
+    var d=Date.now()-ts;
+    if(d<60000)return"az önce";
+    if(d<3600000)return Math.floor(d/60000)+" dk önce";
+    if(d<86400000)return Math.floor(d/3600000)+" sa önce";
+    return new Date(ts).toLocaleDateString("tr-TR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+  }
+
+  function esc(s){var d=document.createElement("div");d.appendChild(document.createTextNode(s));return d.innerHTML}
+
+  async function api(path,opts){
+    opts=opts||{};
+    var headers={"Content-Type":"application/json"};
+    var tok=getToken();
+    if(tok)headers["Authorization"]="Bearer "+tok;
+    opts.headers=Object.assign(headers,opts.headers||{});
+    var res=await fetch(API+path,opts);
+    var data=await res.json();
+    return{ok:res.ok,data:data};
+  }
+
+  // Event listener'lar init sonunda bağlanacak
+
+  // LOGIN
+  async function doLogin(){
+    var username=document.getElementById("login-user").value.trim();
+    var password=document.getElementById("login-pass").value;
+    hideErr("login-err");
+    if(!username||!password){showErr("login-err","Kullanıcı adı ve şifre gerekli");return}
+    var btn=document.getElementById("login-btn");
+    btn.disabled=true;
+    var r=await api("/api/auth/login",{method:"POST",body:JSON.stringify({username:username,password:password})});
+    btn.disabled=false;
+    if(!r.ok){showErr("login-err",r.data.error||"Hata");return}
+    setToken(r.data.token);
+    user=r.data.user;
+    saveUser(user);
+    openDash();
+  }
+
+  function openDash(){
+    var u=user||getSavedUser();
+    if(!u)return;
+    document.getElementById("dash-name").textContent=u.displayName||u.username;
+    var link=window.location.origin+window.location.pathname+"?t="+u.sendToken;
+    document.getElementById("dash-link").textContent=link;
+    show("dash");
+    loadMsgs();
+  }
+
+  async function doLogout(){
+    await api("/api/auth/logout",{method:"POST"});
+    clearStorage();user=null;msgs=[];
+    show("login");
+    document.getElementById("login-pass").value="";
+  }
+
+  function copyLink(){
+    var u=user||getSavedUser();
+    if(!u)return;
+    var link=window.location.origin+window.location.pathname+"?t="+u.sendToken;
+    navigator.clipboard.writeText(link).then(function(){toast("Link kopyalandı")});
+  }
+
+  function goGetMessages(){
+    show("login");
+  }
+
+  async function loadMsgs(){
+    var list=document.getElementById("msg-list");
+    list.innerHTML='<div class="loading"><span class="spin"></span>yükleniyor</div>';
+    var r=await api("/api/messages");
+    if(!r.ok){list.innerHTML='<div class="empty">yüklenemedi</div>';return}
+    msgs=r.data.messages||[];
+    renderMsgs();
+  }
+
+  function renderMsgs(){
+    var list=document.getElementById("msg-list");
+    var badge=document.getElementById("unread-badge");
+    if(msgs.length===0){list.innerHTML='<div class="empty">henüz mesaj yok<br>linkini paylaş</div>';badge.style.display="none";return}
+    var unread=msgs.filter(function(m){return!m.read}).length;
+    if(unread>0){badge.style.display="inline";badge.textContent=unread}else{badge.style.display="none"}
+    var html="";
+    msgs.forEach(function(m){
+      var dot=m.read?"":'<span class="udot"></span>';
+      html+='<div class="mcard'+(m.read?"":" unread")+'" onclick="openMsg(\''+m.id+'\')">';
+      html+='<div class="mtop"><span class="msender">'+dot+esc(m.senderName)+'</span><span class="mtime">'+timeAgo(m.timestamp)+'</span></div>';
+      html+='<div class="mbody">'+esc(m.content)+'</div></div>';
+    });
+    list.innerHTML=html;
+  }
+
+  async function openMsg(id){
+    var m=msgs.find(function(x){return x.id===id});
+    if(!m)return;
+    openMsgId=id;
+    document.getElementById("m-name").textContent=m.senderName;
+    document.getElementById("m-text").textContent=m.content;
+    document.getElementById("m-time").textContent=timeAgo(m.timestamp);
+    document.getElementById("overlay").classList.add("show");
+    if(!m.read){
+      await api("/api/messages/"+id+"/read",{method:"PATCH"});
+      var idx=msgs.findIndex(function(x){return x.id===id});
+      if(idx!==-1){msgs[idx].read=true;renderMsgs()}
+    }
+  }
+
+  function overlayClick(e){if(e.target===document.getElementById("overlay"))closeModal()}
+  function closeModal(){document.getElementById("overlay").classList.remove("show");openMsgId=null}
+
+  async function deleteMsg(){
+    if(!openMsgId)return;
+    var r=await api("/api/messages/"+openMsgId,{method:"DELETE"});
+    if(r.ok){msgs=msgs.filter(function(m){return m.id!==openMsgId});closeModal();renderMsgs();toast("Silindi")}
+  }
+
+  // SEND
+  async function doSend(){
+    var content=document.getElementById("send-msg").value.trim();
+    if(!content){return}
+    var btn=document.getElementById("send-btn");
+    btn.disabled=true;
+    var senderName=document.getElementById("send-name").value.trim();
+    if(!senderName){toast("Adını yaz");btn.disabled=false;return}
+    var r=await api("/api/messages/send",{method:"POST",body:JSON.stringify({sendToken:currentSendToken,content:content,senderName:senderName})});
+    btn.disabled=false;
+    if(!r.ok){toast(r.data.error||"Hata");return}
+    document.getElementById("send-form-wrap").style.display="none";
+    document.getElementById("send-success-wrap").style.display="flex";
+  }
+
+  function resetSend(){
+    document.getElementById("send-msg").value="";
+    document.getElementById("send-form-wrap").style.display="flex";
+    document.getElementById("send-success-wrap").style.display="none";
+  }
+
+  // SETUP
+  async function doSetup(){
+    var s1user=document.getElementById("s1-user").value.trim();
+    var s1pass=document.getElementById("s1-pass").value;
+    var s1name=document.getElementById("s1-name").value.trim();
+    var s2user=document.getElementById("s2-user").value.trim();
+    var s2pass=document.getElementById("s2-pass").value;
+    var s2name=document.getElementById("s2-name").value.trim();
+    hideErr("setup-err");
+    if(!s1user||!s1pass||!s2user||!s2pass){showErr("setup-err","Tüm alanları doldur");return}
+    var btn=document.getElementById("setup-btn");btn.disabled=true;
+    var r=await api("/api/setup/init",{method:"POST",body:JSON.stringify({
+      user1:{username:s1user,password:s1pass,displayName:s1name||s1user},
+      user2:{username:s2user,password:s2pass,displayName:s2name||s2user}
+    })});
+    btn.disabled=false;
+    if(!r.ok){showErr("setup-err",r.data.error||"Hata");return}
+    var u=r.data.users;
+    var html="";
+    u.forEach(function(x){
+      html+='<div class="rl">'+x.displayName+' — send linki</div><div class="rv">?t='+x.sendToken+'</div>';
+      html+='<div class="rl" style="margin-top:6px">'+x.displayName+' — login URL</div><div class="rv">?login='+x.loginToken+'</div><br>';
+    });
+    document.getElementById("setup-result-box").innerHTML=html;
+    document.getElementById("setup-result").style.display="block";
+    btn.style.display="none";
+  }
+
+  // INIT
+  async function init(){
+    var params=new URLSearchParams(window.location.search);
+    var sendToken=params.get("t");
+    var loginParam=params.get("login");
+    var setupParam=params.get("setup");
+
+    // Token yoksa 404
+    if(!sendToken&&!loginParam&&!setupParam){
+      document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f0f0f;color:#1e1e1e;font-size:13px;letter-spacing:.1em;font-family:Inter,sans-serif">404</div>';
+      return;
+    }
+
+    // Setup
+    if(setupParam==="true"){
+      var r=await api("/api/setup/check");
+      if(r.ok&&r.data.setupDone){
+        document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f0f0f;color:#1e1e1e;font-size:13px;letter-spacing:.1em;font-family:Inter,sans-serif">404</div>';
+        return;
+      }
+      show("setup");
+      return;
+    }
+
+    // Login URL
+    if(loginParam){
+      var tok=getToken();
+      if(tok){
+        var r=await api("/api/auth/me");
+        if(r.ok){user=r.data;saveUser(user);openDash();return}
+        clearStorage();
+      }
+      show("login");
+      return;
+    }
+
+    // Send sayfası
+    if(sendToken){
+      var r=await api("/api/resolve/"+sendToken);
+      if(!r.ok){
+        document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f0f0f;color:#1e1e1e;font-size:13px;letter-spacing:.1em;font-family:Inter,sans-serif">404</div>';
+        return;
+      }
+      currentSendToken=sendToken;
+      document.getElementById("send-handle").textContent="@"+(r.data.displayName||r.data.username);
+      show("send");
+      // Zar butonu ve diğer event listener'lar
+      var dice=document.getElementById("dice-btn");
+      if(dice){dice.addEventListener("click",function(){
+        var q=RANDOM_QUESTIONS[Math.floor(Math.random()*RANDOM_QUESTIONS.length)];
+        document.getElementById("send-msg").value=q;
+      });}
+    }
+    // Login enter tuşu her zaman bağlansın
+    var lpass=document.getElementById("login-pass");
+    if(lpass){lpass.addEventListener("keypress",function(e){if(e.key==="Enter")doLogin();});}
+  }
+
+  init();
+</script>
+</body>
+</html>
